@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cross-Inform", "Cross-Inform\Cross-Inform.csproj", "{BC585709-62A7-4CB7-A274-9FA9C7844074}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrequencyTextAnalyzer", "FrequencyTextAnalyzer\FrequencyTextAnalyzer.csproj", "{EB0EAD33-6C3F-4B80-8678-BF2EB137A9C8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC585709-62A7-4CB7-A274-9FA9C7844074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC585709-62A7-4CB7-A274-9FA9C7844074}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC585709-62A7-4CB7-A274-9FA9C7844074}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC585709-62A7-4CB7-A274-9FA9C7844074}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB0EAD33-6C3F-4B80-8678-BF2EB137A9C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB0EAD33-6C3F-4B80-8678-BF2EB137A9C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB0EAD33-6C3F-4B80-8678-BF2EB137A9C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB0EAD33-6C3F-4B80-8678-BF2EB137A9C8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4B75AD67-FAE8-4DDF-A082-B3522B9D979B}
+	EndGlobalSection
+EndGlobal
