@@ -4,7 +4,14 @@
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            var filePath = Console.ReadLine();
+            var tokenSource = new CancellationTokenSource();
+            var frequencyAnalyzer = new FrequencyTextAnalyzer.FrequencyTextAnalyzer(filePath, tokenSource.Token);
+            var query = frequencyAnalyzer.TextAnalysis().Result;
+            foreach (var item in query)
+            {
+                Console.WriteLine($"{item.Key}: {item.Value}");
+            }
         }
     }
 }
