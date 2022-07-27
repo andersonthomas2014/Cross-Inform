@@ -7,87 +7,85 @@ namespace FrequencyTextAnalyzer
     {
         private string _text;
 
-        private object _lock = new object();
+        private Task _loadData;
 
         private CancellationToken _token;
 
-        private ConcurrentDictionary<string, int> _dictionary;
-
-        public string Text
-        {
-            get { return _text; }
-            set
-            {
-                if (value.Length != 0)
-                    _text = value;
-                else throw new ArgumentException("The size of text should be greater than zero");
-            }
-        }
+        private ConcurrentDictionary<string, int> _dictionary = new ConcurrentDictionary<string, int>();
 
         public string FilePath
         {
             set
             {
-                try
-                {
-                    Text = ReadFileAsync(value).Result;
-                }
-                catch (Exception e)
-                {
-                    throw new ArgumentException($"Filepath isn't valid: {e.Message}");
-                }
-
+                _loadData = ReadFileAsync(value);
             }
         }
 
-        public FrequencyTextAnalyzer(string text, CancellationToken? token)
+        public FrequencyTextAnalyzer(string filePath, CancellationToken? token)
         {
-            Text = text;
-            _lock = new object();
+            FilePath = filePath;
             _token = token ?? default;
-            _dictionary = new ConcurrentDictionary<string, int>();
         }
 
-        public FrequencyTextAnalyzer(string text)
-            :this(text, null)
+        public FrequencyTextAnalyzer(string filePath)
+            :this(filePath, null)
         {
         }
 
-        public async Task<Dictionary<string,int>> TextAnalysis()
+        /// <summary>
+        /// Производит поиск триплетов в тексте.
+        /// </summary>
+        /// <returns>Возвращает словарь c парами: триплет - количество вхождений.</returns>
+        public async Task<ConcurrentDictionary<string,int>> TextAnalysis()
         {
-            for (int j = 0; j < 3; j++)
+            await _loadData.ConfigureAwait(false);
+            //j - смещение от начала текста
+            //Если считывать по три символа, начиная с 0-го, 1-го, 2-го,
+            //то получится перебрать все комбинации (триплеты) в тексте
+            await Task.Run(() =>
             {
-                Parallel.ForEach(Partitioner.Create(0, _text.Length / 3), new ParallelOptions() { MaxDegreeOfParallelism = 4 }, () => new Dictionary<string, int>(),
-                    (range, parallelLoopState, dictionary) =>
+                for (int j = 0; j < 3; j++)
                 {
-                    int lastIndex;
-                    for (int i = range.Item1; i < range.Item2; i++)
+                    int temp = j;
+                    Parallel.ForEach(Partitioner.Create(0, _text.Length / 3), new ParallelOptions() { MaxDegreeOfParallelism = 2, CancellationToken = _token }, () => new Dictionary<string, int>(),
+                        (range, parallelLoopState, dictionary) =>
                     {
-                        lastIndex = i * 3 + 2 + j;
-                        if (lastIndex < _text.Length)
+                        int lastIndex;
+                        for (int i = range.Item1; i < range.Item2; i++)
                         {
-                            var key = _text.Substring(lastIndex - 2, 3);
+                            lastIndex = i * 3 + 2 + temp;
+                            if (lastIndex < _text.Length)
+                            {
+                                var key = _text.Substring(lastIndex - 2, 3);
 
-                            if (dictionary.TryGetValue(key, out var result))
-                                dictionary[key]++;
-                            else dictionary.Add(key, 1);
+                                if (!dictionary.TryAdd(key, 1))
+                                    dictionary[key]++;
+                            }
                         }
-                    }
-                    return dictionary;
-                },
-                    (dictionary) =>
-                {
-                    foreach (var item in dictionary)
-                        lock (_lock)
-                        {
-                            if(!_dictionary.TryAdd(item.Key, item.Value))
-                                dictionary[item.Key]+=item.Value;
-                        }
-                });
-            }
-            return _dictionary.AsParallel().OrderByDescending(_ => _.Value).Take(10).ToDictionary(_=>_.Key, _=>_.Value);
+                        return dictionary;
+                    },
+                        (dictionary) =>
+                    {
+                        foreach (var item in dictionary)
+
+                            if (!_dictionary.TryAdd(item.Key, item.Value))
+                                _dictionary[item.Key] += item.Value;
+                    });
+                }
+            });
+            return _dictionary;
         }
 
-        private async Task<string> ReadFileAsync(string filePath) => await File.ReadAllTextAsync(filePath, cancellationToken: _token);
+        private async Task ReadFileAsync(string filePath)
+        {
+            try
+            {
+                _text = await File.ReadAllTextAsync(filePath, cancellationToken: _token);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Filepath isn't valid: {e.Message}");
+            }
+        }
     }
 }
